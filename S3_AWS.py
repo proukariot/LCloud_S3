@@ -67,3 +67,46 @@ def delete_files_with_regex(bucket_name, pattern):
         print("Credentials not available.")
     except ClientError as e:
         print(f"Error: {e}")
+
+# Main function to parse arguments and call appropriate functions
+def main():
+    parser = argparse.ArgumentParser(description="S3 Bucket Management CLI")
+    
+    subparsers = parser.add_subparsers(dest='command', help='Sub-command help')
+
+    # Sub-command to list all files in the "x-wing" directory
+    parser_list = subparsers.add_parser('list', help='List all files in the "x-wing" directory')
+    parser_list.add_argument('bucket', type=str, help='Name of the S3 bucket')
+
+    # Sub-command to upload a file to the "x-wing" directory
+    parser_upload = subparsers.add_parser('upload', help='Upload a file to the "x-wing" directory in the bucket')
+    parser_upload.add_argument('bucket', type=str, help='Name of the S3 bucket')
+    parser_upload.add_argument('file_path', type=str, help='Path of the local file to upload')
+    parser_upload.add_argument('s3_key', type=str, help='S3 object key (file name in the "x-wing" directory)')
+
+    # Sub-command to list files matching a regex in the "x-wing" directory
+    parser_list_regex = subparsers.add_parser('list_regex', help='List files matching a regex in the "x-wing" directory')
+    parser_list_regex.add_argument('bucket', type=str, help='Name of the S3 bucket')
+    parser_list_regex.add_argument('pattern', type=str, help='Regex pattern to filter files')
+
+    # Sub-command to delete files matching a regex in the "x-wing" directory
+    parser_delete_regex = subparsers.add_parser('delete_regex', help='Delete files matching a regex in the "x-wing" directory')
+    parser_delete_regex.add_argument('bucket', type=str, help='Name of the S3 bucket')
+    parser_delete_regex.add_argument('pattern', type=str, help='Regex pattern to match files for deletion')
+
+    args = parser.parse_args()
+
+    # Determine which command to execute
+    if args.command == 'list':
+        list_files(args.bucket)
+    elif args.command == 'upload':
+        upload_file(args.bucket, args.file_path, args.s3_key)
+    elif args.command == 'list_regex':
+        list_files_with_regex(args.bucket, args.pattern)
+    elif args.command == 'delete_regex':
+        delete_files_with_regex(args.bucket, args.pattern)
+    else:
+        parser.print_help()
+
+if __name__ == '__main__':
+    main()
