@@ -13,6 +13,7 @@ s3_client = boto3.client(
 )
 
 # Prefix (directory) we are limited to
+#bucket_name = 'developer-task'
 PREFIX = 'x-wing/'
 
 # Function to list all files in the "x-wing" directory of the S3 bucket
@@ -40,6 +41,23 @@ def upload_file(bucket_name, file_path, s3_key):
         print(f"File '{file_path}' uploaded to '{full_s3_key}' in bucket '{bucket_name}'.")
     except FileNotFoundError:
         print(f"File '{file_path}' not found.")
+    except NoCredentialsError:
+        print("Credentials not available.")
+    except ClientError as e:
+        print(f"Error: {e}")
+
+# Function to list files in the "x-wing" directory that match a regex
+def list_files_with_regex(bucket_name, pattern):
+    try:
+        response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=PREFIX)
+        if 'Contents' in response:
+            print(f"Files in {bucket_name}/{PREFIX} matching pattern '{pattern}':")
+            regex = re.compile(pattern)
+            for obj in response['Contents']:
+                if regex.match(obj['Key']):
+                    print(obj['Key'])
+        else:
+            print(f"No files found in bucket {bucket_name}/{PREFIX}.")
     except NoCredentialsError:
         print("Credentials not available.")
     except ClientError as e:
